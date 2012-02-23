@@ -27,13 +27,17 @@ CFLAGS      +=
 CPPFLAGS    +=
 LDFLAGS     += -ldl -shared
 
-all:    netscapesecuritywrapper.so
-dist:   netscapesecuritywrapper-$(VERSION).tar.gz
+ifeq ($(shell uname -m), i686)
+CFLAGS      += -m32
+endif
 
-netscapesecuritywrapper-$(VERSION).tar.gz: netscapesecuritywrapper.so $(DIST_EXTRA)
-	mkdir -p dist/netscapesecuritywrapper-$(VERSION)
-	cp -r $^ dist/netscapesecuritywrapper-$(VERSION)
-	tar -C dist -zcvf $@ netscapesecuritywrapper-$(VERSION)
+all:    netscapesecuritywrapper.so
+dist:   netscapesecuritywrapper-$(VERSION)-$(shell uname)-$(shell uname -m).tar.gz
+
+netscapesecuritywrapper-$(VERSION)-$(shell uname)-$(shell uname -m).tar.gz: netscapesecuritywrapper.so $(DIST_EXTRA)
+	mkdir -p dist/netscapesecuritywrapper-$(VERSION)-$(shell uname)-$(shell uname -m)
+	cp -r $^ dist/netscapesecuritywrapper-$(VERSION)-$(shell uname)-$(shell uname -m)
+	tar -C dist -zcvf $@ netscapesecuritywrapper-$(VERSION)-$(shell uname)-$(shell uname -m)
 	rm -rf dist
 endif
 
