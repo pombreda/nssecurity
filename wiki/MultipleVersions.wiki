@@ -1,5 +1,5 @@
 #summary Allowing multiple plugin versions (e.g. Java) to co-exist
-#labels Phase-Deploy,Featured
+#labels Phase-Deploy
 
 = Introduction =
 
