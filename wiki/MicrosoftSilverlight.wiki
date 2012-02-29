@@ -71,6 +71,16 @@ AllowedDomains=*.netflix.com
 AllowInsecure=1
 }}}
 
+To verify the problem is solved, follow the steps below.
+
+  # Start an NPAPI compatible browser (Chrome, Safari) and visit about:plugins
+  # Verify you see a Silverlight Plugin advertising no MIME types.
+  # Verify you see Netscape Security Wrapper advertising the Silverlight MIME types:
+    * `application/x-silverlight`
+    * `application/x-silverlight-2`
+  # Visit an AllowedDomain and verify the content plays.
+  # Visit a domain that is not allowed, and verify the content is blocked (with the warning message, if configured).
+
 = Notes =
 
   * This solution was tested on Safari and Chrome with Lion.
