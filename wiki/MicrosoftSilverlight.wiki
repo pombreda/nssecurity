@@ -9,7 +9,7 @@ This article discusses the cause and suggests a solution.
 
 = Details =
 
-If you are not interested in the cause of this problem, you can skip this section and jump to the [MicrosoftSilverlight#Solutions Solutions] below.
+_If you are not interested in the cause of this problem, you can skip this section and jump to the [MicrosoftSilverlight#Solutions Solutions] below._
 
 Microsoft provide a JavaScript file called Silverlight.js to developers that is intended to display a friendly installation button if the browser doesn't support Silverlight.
 
