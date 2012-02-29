@@ -480,9 +480,6 @@ NPError netscape_plugin_clearsitedata(const char* site, uint64_t flags, uint64_t
         if (!current->plugin_funcs->clearsitedata)
             continue;
 
-        l_debug("\t%s implements this feature, forwarding request...",
-                current->section);
-
         // What should I do on error here?
         if (current->plugin_funcs->clearsitedata(site,
                                                  flags,
@@ -507,8 +504,6 @@ char **netscape_plugin_getsiteswithdata(void)
     result = NULL;
     total = 0;
 
-    l_debug("browser requests a list of sites with data, creating aggregate response");
-
     // Pass the query through to each plugin.
     for (current = registry.plugins; current; current = current->next) {
         char        **sites_data;
@@ -520,14 +515,10 @@ char **netscape_plugin_getsiteswithdata(void)
         if (!current->plugin_funcs->getsiteswithdata)
             continue;
 
-        l_debug("\t%s implements this feature, forwarding request...",
-                current->section);
-
         sites_data = current->plugin_funcs->getsiteswithdata();
 
         // Verify that returned something useful.
         if (!sites_data) {
-            l_debug("\t\t%s plugin %s reports no sites have data");
             continue;
         }
 
@@ -547,13 +538,10 @@ char **netscape_plugin_getsiteswithdata(void)
             }
 
             // Re-use the string we were given.
-            result[total] = sites_data[count];
-
-            // Increment total number of strings.
-            total++;
+            result[total++] = sites_data[count];
         }
 
-        l_debug("\t\tplugin %s reports %u sites with data",
+        l_debug("plugin %s reports %u sites with data",
                 current->section,
                 count);
 
@@ -565,13 +553,13 @@ char **netscape_plugin_getsiteswithdata(void)
     final = registry.netscape_funcs->memalloc(total * sizeof(char *)
                                                     + sizeof(char *));
 
+    // Add one pointer for a NULL terminating pointer.
     memset(final, 0, total * sizeof(char *) + sizeof(char *));
 
+    // Copy my array in.
     memcpy(final, result, total * sizeof(char *));
 
-    l_debug("%u sites reported", total);
-
-    // Release working version.
+    // Release the working version.
     free(result);
 
     return final;
