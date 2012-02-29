@@ -31,7 +31,7 @@ This requires a plugin named exactly "Silverlight Plug-In" to exist, regardless 
 
 = Solutions =
 
-The easiest solution is just to provide an dummy plugin that satisfies this requirement, this can be done on OS X by simply removing the advertised MIME types from Silverlight.
+The easiest solution is just to provide a dummy plugin that satisfies this requirement, this can be done on OS X by simply removing the advertised MIME types from Silverlight.
 
 {{{
 $ sudo -s
