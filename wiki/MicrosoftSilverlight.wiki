@@ -11,7 +11,7 @@ This article discusses the cause and suggests a solution.
 
 If you are not interested in the cause of this problem, you can skip this section and jump to the [MicrosoftSilverlight#Solutions Solutions] below.
 
-Microsoft provide a JavaScript file called Silverlight.js to Silverlight developers that is intended to display an installation button if the browser doesn't support Silverlight.
+Microsoft provide a JavaScript file called Silverlight.js to developers that is intended to display a friendly installation button if the browser doesn't support Silverlight.
 
 http://archive.msdn.microsoft.com/silverlightjs
 
