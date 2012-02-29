@@ -44,6 +44,9 @@ static const char kMimeCharacterSet[] =
 // The maximum realistic length of a MIME type.
 static const size_t kMaxMimeLength = 128;
 
+// Maximum number of sites per plugin for NPP_GetSitesWithData.
+static const unsigned kMaxSitesWithData = 1024;
+
 // Deletes a specific instance of a plug-in.
 NPError netscape_plugin_destroy(NPP instance, NPSavedData **save)
 {
@@ -539,6 +542,16 @@ char **netscape_plugin_getsiteswithdata(void)
 
             // Re-use the string we were given.
             result[total++] = sites_data[count];
+
+            // Sanity check. I'll leak the remaining strings returned here, but
+            // the plugin is broken and I would prefer not to interact with it.
+            // Leaking memory is relatively minor.
+            if (count >= kMaxSitesWithData) {
+                l_warning("stop querying %s after unusually high count %u",
+                          current->plugin,
+                          count);
+                break;
+            }
         }
 
         l_debug("plugin %s reports %u sites with data",
@@ -553,11 +566,19 @@ char **netscape_plugin_getsiteswithdata(void)
     final = registry.netscape_funcs->memalloc(total * sizeof(char *)
                                                     + sizeof(char *));
 
+    // Check that worked.
+    if (!final) {
+        l_warning("memory allocation failed, %u pointer array", total);
+        goto finished;
+    }
+
     // Add one pointer for a NULL terminating pointer.
     memset(final, 0, total * sizeof(char *) + sizeof(char *));
 
     // Copy my array in.
     memcpy(final, result, total * sizeof(char *));
+
+finished:
 
     // Release the working version.
     free(result);
