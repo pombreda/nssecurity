@@ -8,7 +8,7 @@ COMMON      = config.o netscape.o log.o third_party/inih/ini.o instance.o export
 DIST_EXTRA  = README nssecurity.ini
 
 ifeq ($(shell uname), Darwin)
-CFLAGS      += -arch i386 -arch x86_64
+CFLAGS      += -arch i386 -arch x86_64 -fno-constant-cfstrings
 CPPFLAGS    += -DXP_MACOSX
 LDFLAGS     += -bundle -framework CoreFoundation
 
