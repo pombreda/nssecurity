@@ -1,4 +1,4 @@
-VERSION     = 0.99.9
+VERSION     = 0.99.10
 CFLAGS      = -s -O2 -fPIC -W -Wall -std=gnu99 -fvisibility=hidden -fstack-protector-all $(EXTRA_CFLAGS)
 CPPFLAGS    = -Ithird_party/inih -Ithird_party/npapi -DNSSECURITY_VERSION=\"$(VERSION)\" -DNDEBUG -D_FORTIFY_SOURCE=2 $(EXTRA_CPPFLAGS)
 LDFLAGS     = $(EXTRA_LDFLAGS)
