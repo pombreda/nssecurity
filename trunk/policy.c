@@ -34,7 +34,7 @@
 #include "config.h"
 #include "policy.h"
 
-static const char kDomainCharacterSet[] = "abcdefghijklmnopqrstuvwxyz0123456789-._";
+static const char kDomainCharacterSet[] = "abcdefghijklmnopqrstuvwxyz0123456789-._:";
 static const size_t kDomainMaxLen = 128;
 static const char kHttpPrefix[] = "http://";
 static const char kHttpsPrefix[] = "https://";
