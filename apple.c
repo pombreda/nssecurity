@@ -119,9 +119,9 @@ void __export BP_CreatePluginMIMETypesPreferences(void)
                 //
                 //        I can implement it on request, but see no reason to
                 //        implement now.
-                l_warning("unable to handle plugin %s, from %s",
-                          current->section,
-                          current->plugin);
+                l_debug("unable to handle plugin %s, from %s",
+                        current->section,
+                        current->plugin);
             }
         }
     }

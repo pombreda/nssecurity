@@ -65,9 +65,9 @@ NPError netscape_plugin_destroy(NPP instance, NPSavedData **save)
     // We can remove this instance now, as the browser promises not to use it
     // again.
     if (!netscape_instance_destroy(instance)) {
-        l_warning("resolved instance to %s, but failed to destroy instance %p",
-                  plugin->section,
-                  instance);
+        l_debug("resolved instance to %s, but failed to destroy instance %p",
+                plugin->section,
+                instance);
         return NPERR_GENERIC_ERROR;
     }
 
@@ -111,13 +111,13 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
 
     // First sanity check the untrusted parameter pluginType.
     if (strspn(pluginType, kMimeCharacterSet) != strlen(pluginType)) {
-        l_warning("rejected unusual mime type supplied by browser");
+        l_debug("rejected unusual mime type supplied by browser");
         return NPERR_INVALID_PARAM;
     }
 
     // Verify it's a sane length.
     if (strlen(pluginType) > kMaxMimeLength) {
-        l_warning("rejected unusual mime type supplied by browser");
+        l_debug("rejected unusual mime type supplied by browser");
         return NPERR_INVALID_PARAM;
     }
 
@@ -163,15 +163,15 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
 
             // Fetch the current domain from netscape.
             if (!netscape_plugin_geturl(instance, &pageurl)) {
-                l_warning("unknown url for plugin %s", current->section);
+                l_debug("unknown url for plugin %s", current->section);
                 continue;
             }
 
             // Match that URL against the security policy.
             if (!policy_plugin_allowed_url(current, pageurl)) {
-                l_warning("plugin %s not allowed from %s, policy match failed",
-                          current->section,
-                          pageurl);
+                l_debug("plugin %s not allowed from %s, policy match failed",
+                        current->section,
+                        pageurl);
 
                 // Possibly display a message to the user.
                 netscape_display_message(instance, current->warning
@@ -196,7 +196,7 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
 
     // At this point, if current is NULL, we don't want this type.
     if (!current) {
-        l_warning("netscape requested %s, but we cant handle it", pluginType);
+        l_debug("netscape requested %s, but we cant handle it", pluginType);
         return NPERR_INVALID_PARAM;
     }
 
@@ -487,8 +487,8 @@ NPError netscape_plugin_clearsitedata(const char* site, uint64_t flags, uint64_t
         if (current->plugin_funcs->clearsitedata(site,
                                                  flags,
                                                  maxAge) != NPERR_NO_ERROR) {
-            l_warning("plugin %s returned error from ClearSiteData",
-                      current->section);
+            l_debug("plugin %s returned error from ClearSiteData",
+                    current->section);
         }
     }
 
@@ -534,9 +534,9 @@ char **netscape_plugin_getsiteswithdata(void)
 
             // Verify that worked.
             if (!result) {
-                l_warning("memory allocation failure querying sites for %s, %u",
-                          current->plugin,
-                          count);
+                l_debug("memory allocation failure querying sites for %s, %u",
+                        current->plugin,
+                        count);
                 return NULL;
             }
 
@@ -547,9 +547,9 @@ char **netscape_plugin_getsiteswithdata(void)
             // the plugin is broken and I would prefer not to interact with it.
             // Leaking memory is relatively minor.
             if (count >= kMaxSitesWithData) {
-                l_warning("stop querying %s after unusually high count %u",
-                          current->plugin,
-                          count);
+                l_debug("stop querying %s after unusually high count %u",
+                        current->plugin,
+                        count);
                 break;
             }
         }
@@ -568,7 +568,7 @@ char **netscape_plugin_getsiteswithdata(void)
 
     // Check that worked.
     if (!final) {
-        l_warning("memory allocation failed, %u pointer array", total);
+        l_debug("memory allocation failed, %u pointer array", total);
         goto finished;
     }
 
