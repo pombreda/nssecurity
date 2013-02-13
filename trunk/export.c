@@ -86,7 +86,7 @@ __export NPError NP_GetValue(NPP instance, NPPVariable variable, void *value)
             // We need to lookup who owns this instance.
             if (!netscape_instance_resolve(instance, &plugin)) {
                 // Instance does not exist, and I don't want to handle it.
-                l_warning("failed to resolve instance %p for variable %u",
+                l_debug("failed to resolve instance %p for variable %u",
                           instance,
                           variable);
 
@@ -137,9 +137,9 @@ __export NPError NP_Initialize(NPNetscapeFuncs *aNPNFuncs,
         np_getentrypoints = platform_dlsym(current->handle, "NP_GetEntryPoints");
 
         if (!np_initialize) {
-            l_warning("failed to resolve required symbol from %s, \"%s\"",
-                      current->plugin,
-                      dlerror());
+            l_debug("failed to resolve required symbol from %s, \"%s\"",
+                    current->plugin,
+                    dlerror());
             goto next;
         }
 
@@ -148,9 +148,9 @@ __export NPError NP_Initialize(NPNetscapeFuncs *aNPNFuncs,
         if (current->plugin_funcs == NULL) {
             // Warn about potential incompatabilities.
             if (aNPNFuncs->version > ((NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR)) {
-                l_warning("browser supports NPAPI revision %u, but we know %u",
-                          aNPNFuncs->version,
-                          (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR);
+                l_debug("browser supports NPAPI revision %u, but we know %u",
+                        aNPNFuncs->version,
+                        (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR);
                 goto next;
             }
 
@@ -166,8 +166,8 @@ __export NPError NP_Initialize(NPNetscapeFuncs *aNPNFuncs,
         if (np_initialize(aNPNFuncs, current->plugin_funcs) != NPERR_NO_ERROR) {
             // Difficult to know what to do here, should I stop passing calls
             // to this plugin?
-            l_warning("plugin %s returned error from NP_Initialize",
-                      current->section);
+            l_debug("plugin %s returned error from NP_Initialize",
+                    current->section);
             goto next;
         }
 
@@ -177,9 +177,9 @@ __export NPError NP_Initialize(NPNetscapeFuncs *aNPNFuncs,
             if (np_getentrypoints(current->plugin_funcs) != NPERR_NO_ERROR) {
                 // Difficult to know what to do here, should I stop passing
                 // calls to this plugin?
-                l_warning("plugin %s returned error from NP_GetEntryPoints, %d",
-                          current->section,
-                          np_getentrypoints(current->plugin_funcs));
+                l_debug("plugin %s returned error from NP_GetEntryPoints, %d",
+                        current->section,
+                        np_getentrypoints(current->plugin_funcs));
                 goto next;
             }
         }
@@ -199,7 +199,7 @@ __export NPError NP_Initialize(NPNetscapeFuncs *aNPNFuncs,
     // On Apple, the browser is expected to call this routine, on Linux, I'll
     // pass it through manually.
     if (NP_GetEntryPoints(aNPPFuncs) != NPERR_NO_ERROR) {
-        l_warning("NP_GetEntryPoints failed.");
+        l_debug("NP_GetEntryPoints failed.");
         return NPERR_GENERIC_ERROR;
     }
 #endif
@@ -228,8 +228,8 @@ __export NPError NP_GetEntryPoints(NPPluginFuncs *pFuncs)
             pFuncs->size);
 
     if (pFuncs->size < sizeof(NPPluginFuncs)) {
-        l_warning("browser requested unrecognized function table size %u",
-                  pFuncs->size);
+        l_debug("browser requested unrecognized function table size %u",
+                pFuncs->size);
         return NPERR_INVALID_FUNCTABLE_ERROR;
     }
 

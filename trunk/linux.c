@@ -36,9 +36,9 @@ char * platform_getmimedescription(struct plugin *plugin)
 
     // Make sure we have a handle to this plugin.
     if (!plugin->handle) {
-        l_warning("BUG: no open handle to plugin %s for %s",
-                  plugin->section,
-                  plugin->plugin);
+        l_debug("BUG: no open handle to plugin %s for %s",
+                plugin->section,
+                plugin->plugin);
         return NULL;
     }
 
@@ -47,10 +47,10 @@ char * platform_getmimedescription(struct plugin *plugin)
 
     // Verify that worked.
     if (!get_mime_description) {
-        l_warning("unable to find NP_GetMIMEDescription in %s for %s, %s",
-                  plugin->plugin,
-                  plugin->section,
-                  dlerror());
+        l_debug("unable to find NP_GetMIMEDescription in %s for %s, %s",
+                plugin->plugin,
+                plugin->section,
+                dlerror());
         return NULL;
     }
 

@@ -130,9 +130,9 @@ static int config_ini_handler(struct registry *registry,
     // Lookup this section in our configuration registry to see if we've seen
     // it before. If we havn't, this routine will create it.
     if (find_plugin_section(registry, section, &plugin) == false) {
-        l_warning("failed to create plugin %s while trying to set %s",
-                  section,
-                  name);
+        l_debug("failed to create plugin %s while trying to set %s",
+                section,
+                name);
         return false;
     } else if (strcmp(name, "AllowedDomains") == 0) {
         // AllowedDomains is a whitelist of domains allowed to load the
@@ -224,9 +224,9 @@ static int config_ini_handler(struct registry *registry,
             }
         }
     } else {
-        l_warning("unrecognised directive %s found in section %s",
-                  name,
-                  section);
+        l_debug("unrecognised directive %s found in section %s",
+                name,
+                section);
         return false;
     }
 
@@ -245,7 +245,7 @@ static void __constructor init_parse_config(void)
 
     // Parse the system configuration.
     if (ini_parse(NSSECURITY_PATH, (void *)(config_ini_handler), &registry)) {
-        l_warning("failed to parse the global configuration file");
+        l_debug("failed to parse the global configuration file");
     }
 
     // If permitted, parse the user configuration.
@@ -261,7 +261,7 @@ static void __constructor init_parse_config(void)
 
         // Parse the file.
         if (ini_parse(user_path, (void *)(config_ini_handler), &registry)) {
-            l_warning("failed to parse the user configuration file");
+            l_debug("failed to parse the user configuration file");
         }
     }
 

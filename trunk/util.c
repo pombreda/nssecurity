@@ -104,10 +104,38 @@ bool netscape_display_message(NPP instance, const char *message)
         return false;
     }
 
-    // We cannot display a message this way in Firefox due to a bug.
+    // We cannot display a message this way in Firefox due to a bug, but maybe
+    // we can use applescript to tell Firefox to display the dialog.
+    // XXX: Remove this when firefox alerts work. https://bugzilla.mozilla.org/show_bug.cgi?id=730553
     if (strstr(registry.netscape_funcs->uagent(instance), "Firefox")) {
-        l_warning("FIXME: unable to display messages in FireFox due to a bug");
-        return false;
+        static const char kMessageCharset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ@0123456789.,- ;+=/:_";
+        static const char kExecDialog[] =
+#if defined(__APPLE__)
+        "osascript -e 'tell application \"System Events\" to display dialog \"%s\"' &";
+#elif defined(__linux__)
+        "xmessage '%s' &";
+#else
+# warning please define an alternative message system
+        "";
+#endif
+
+        // Note that the message is a trusted string provided by an
+        // administrator, regardless, we will check the characters are
+        // whitelisted.
+        if (strspn(message, kMessageCharset) != strlen(message)) {
+            l_debug("ignoring invalid message");
+            return false;
+        }
+
+        // Over allocates by one because of the format specifiers.
+        encoded = alloca(strlen(kExecDialog) + strlen(message));
+
+        // Produce the command.
+        sprintf(encoded, kExecDialog, message);
+
+        // Execute.
+        system(encoded);
+        return true;
     }
 
     // Percent encode the required string.
@@ -198,7 +226,7 @@ bool netscape_plugin_geturl(NPP instance, char **url)
                                               hrefid,
                                               &href)
             || !NPVARIANT_IS_STRING(href)) {
-        l_warning("failed to fetch href string for instance %p", instance);
+        l_debug("failed to fetch href string for instance %p", instance);
         return false;
     }
 
@@ -207,7 +235,7 @@ bool netscape_plugin_geturl(NPP instance, char **url)
 
     // Finally, Convert the NPString returned into a C string.
     if (!netscape_string_convert(&NPVARIANT_TO_STRING(href), url)) {
-        l_warning("failed to convert NPString to c string for %p", instance);
+        l_debug("failed to convert NPString to c string for %p", instance);
         return false;
     }
 
@@ -232,7 +260,7 @@ static bool encode_javascript_string(const char *message, char **output)
 
     // Safely encode string using percent-encodiung.
     for (**output = 0; *message; message++) {
-        sprintf(*output + strlen(*output), "%%%02hx", *message);
+        sprintf(*output + strlen(*output), "%%%02hhx", *message);
     }
 
     return true;
