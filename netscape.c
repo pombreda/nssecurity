@@ -193,9 +193,6 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
                             : registry.global->notify_command);
                 }
 
-                // Possibly log the failure.
-
-
                 // Done.
                 free(pageurl);
                 continue;
