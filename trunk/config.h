@@ -23,6 +23,8 @@ struct plugin {
     char            *description;
     char            *name;
     char            *mime_description;
+    char            *notify_command;
+    char            *syslog_decisions;
     void            *handle;
     NPPluginFuncs   *plugin_funcs;
     struct plugin   *next;

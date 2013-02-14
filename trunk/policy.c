@@ -66,7 +66,7 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
 
     // Verify there are some domains.
     if (!plugin->allow_domains) {
-        l_warning("plugin %s has no permitted domains, so %s is not permitted",
+        l_debug("plugin %s has no permitted domains, so %s is not permitted",
                 plugin->section,
                 url);
         return false;
@@ -79,9 +79,9 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
     } else if (strncmp(url, kHttpsPrefix, strlen(kHttpsPrefix)) == 0) {
         hostname = url + strlen(kHttpsPrefix);
     } else {
-        l_warning("plugin %s loaded from unrecognised protocol at %s",
-                  plugin->section,
-                  url);
+        l_debug("plugin %s loaded from unrecognised protocol at %s",
+                plugin->section,
+                url);
         return false;
     }
 
@@ -96,16 +96,16 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
     // Now we have what should be just the hostname, but let's verify it looks
     // sane.
     if (strspn(hostname, kDomainCharacterSet) != strlen(hostname)) {
-        l_warning("discovered non-whitelisted character in hostname %s",
-                  hostname);
+        l_debug("discovered non-whitelisted character in hostname %s",
+                hostname);
         return false;
     }
 
     // Check it's a reasonable length
     if (strlen(hostname) > kDomainMaxLen || strlen(hostname) == 0) {
-        l_warning("rejecting unrealistic length %u for domain name %s",
-                  strlen(hostname),
-                  hostname);
+        l_debug("rejecting unrealistic length %u for domain name %s",
+                strlen(hostname),
+                hostname);
         return false;
     }
 
@@ -120,18 +120,18 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
 
         // Check if this glob matches the host domain.
         if (fnmatch(domainglob, hostname, FNM_NOESCAPE) == 0) {
-            l_warning("domain %s allowed to load plugin %s, matches %s",
-                       hostname,
-                       plugin->section,
-                       domainglob);
+            l_debug("domain %s allowed to load plugin %s, matches %s",
+                    hostname,
+                    plugin->section,
+                    domainglob);
             return true;
         }
     }
 
     // No matching globs found, the plugin is not allowed.
-    l_warning("domain %s is not allowed to load plugin %s",
-              hostname,
-              plugin->section);
+    l_debug("domain %s is not allowed to load plugin %s",
+            hostname,
+            plugin->section);
 
     return false;
 }
