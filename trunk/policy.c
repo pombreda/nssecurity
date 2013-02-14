@@ -35,6 +35,7 @@
 #include "policy.h"
 
 static const char kDomainCharacterSet[] = "abcdefghijklmnopqrstuvwxyz0123456789-._:";
+static const char kPortCharacterSet[] = "0123456789";
 static const size_t kDomainMaxLen = 128;
 static const char kHttpPrefix[] = "http://";
 static const char kHttpsPrefix[] = "https://";
@@ -58,6 +59,7 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
     char *domainglob;
     char *saveptr;
     char *hostname;
+    char *port;
 
     l_debug("testing %s against domain policy %s for url %s",
             plugin->section,
@@ -107,6 +109,46 @@ bool policy_plugin_allowed_domain(struct plugin *plugin, char *url)
                 strlen(hostname),
                 hostname);
         return false;
+    }
+
+    // Check if a port was specified by finding the colon.
+    //
+    //  www.foo.com:blah => :blah
+    if ((port = strchr(hostname, ':'))) {
+        // Check for an empty port specification, e.g. http://foo.com:/asd.
+        if (strlen(port) <= 1 || strlen(port) > strlen(":65535")) {
+            l_debug("rejecting unrealistic port length for host %s", hostname);
+            return false;
+        }
+
+        // So now we know the port is a sane length.
+        assert(port[0] == ':');
+        assert(port[1] != '\0');
+
+        // Increment past the colon.
+        //  :1234 => 1234
+        port++;
+
+        // Check for non-digits in port specification, e.g. http://foo.com:asd/
+        if (strspn(port, kPortCharacterSet) != strlen(port)) {
+            l_debug("rejecting non-digit port specification in %s",
+                    hostname);
+            return false;
+        }
+
+        // The maximum value for port can already only be 99999 due to the
+        // string length, but it should not exceed 65535. If it does, someone is
+        // trying to wrap around to another port.
+        //
+        // Note that we need to specify a base, otherwise someone could use
+        // octal.
+        if (strtoul(port, NULL, 10) > UINT16_MAX || *port == '0') {
+            l_debug("rejecting high or zero padded port specification in %s",
+                    hostname);
+            return false;
+        }
+
+        // At this point, the port seems sane, so continue.
     }
 
     // Create a copy of the policy we can modify with strtok.
@@ -170,6 +212,10 @@ static void __constructor test_policy_allowed(void)
         .section       = "Empty Domain Specification",
         .allow_domains = "",
     };
+    struct plugin testplugin3 = {
+        .section       = "Port Specification",
+        .allow_domains = "*.safe.com:8080",
+    };
 
     assert(policy_plugin_allowed_domain(&testplugin1, "https://www.google.com/safepage.html") == true);
     assert(policy_plugin_allowed_domain(&testplugin1, "https://google.com/safepage.html") == true);
@@ -190,6 +236,14 @@ static void __constructor test_policy_allowed(void)
     assert(policy_plugin_allowed_domain(&testplugin2, "https://www.google.com/") == false);
     assert(policy_plugin_allowed_url(&testplugin1, "https://www.google.com/safepage.html") == true);
     assert(policy_plugin_allowed_url(&testplugin1, "https://www.google.com.evil.com/") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:8081/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:017620/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:8080/asd.html") == true);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:8080:80/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.safe.com:bad/asd") == false);
+    assert(policy_plugin_allowed_url(&testplugin3, "https://www.evil.com:8080/asd") == false);
     return;
 }
 

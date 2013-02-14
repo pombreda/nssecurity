@@ -15,7 +15,6 @@ struct plugin {
     char            *allow_insecure;
     char            *allow_domains;
     char            *allow_override;
-    char            *allow_port;
     char            *allow_auth;
     char            *warning;
     char            *plugin;
