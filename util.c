@@ -108,34 +108,8 @@ bool netscape_display_message(NPP instance, const char *message)
     // we can use applescript to tell Firefox to display the dialog.
     // XXX: Remove this when firefox alerts work. https://bugzilla.mozilla.org/show_bug.cgi?id=730553
     if (strstr(registry.netscape_funcs->uagent(instance), "Firefox")) {
-        static const char kMessageCharset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ@0123456789.,- ;+=/:_";
-        static const char kExecDialog[] =
-#if defined(__APPLE__)
-        "osascript -e 'tell application \"System Events\" to display dialog \"%s\"' &";
-#elif defined(__linux__)
-        "xmessage '%s' &";
-#else
-# warning please define an alternative message system
-        "";
-#endif
-
-        // Note that the message is a trusted string provided by an
-        // administrator, regardless, we will check the characters are
-        // whitelisted.
-        if (strspn(message, kMessageCharset) != strlen(message)) {
-            l_debug("ignoring invalid message");
-            return false;
-        }
-
-        // Over allocates by one because of the format specifiers.
-        encoded = alloca(strlen(kExecDialog) + strlen(message));
-
-        // Produce the command.
-        sprintf(encoded, kExecDialog, message);
-
-        // Execute.
-        system(encoded);
-        return true;
+        l_debug("unable to log messages in firefox due to https://bugzilla.mozilla.org/show_bug.cgi?id=730553");
+        return false;
     }
 
     // Percent encode the required string.

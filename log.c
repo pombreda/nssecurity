@@ -45,15 +45,8 @@ void l_warning_(const char *function, const char *format, ...)
 
     fprintf(stderr, "%s:%s(): ", NSSECURITY_TAG, function);
 
-    // Warnings are logged to syslog by default where they can be easily
-    // collected and aggragated.
-    openlog(NSSECURITY_TAG, LOG_PID, LOG_USER);
-
     va_start(ap, format);
         vfprintf(stderr, format, ap);
-    va_end(ap);
-    va_start(ap, format);
-        vsyslog(LOG_INFO, format, ap);
     va_end(ap);
 
     fputc('\n', stderr);

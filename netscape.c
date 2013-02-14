@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <dlfcn.h>
 #include <strings.h>
+#include <syslog.h>
 
 #include "log.h"
 #include "npapi.h"
@@ -109,6 +110,9 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
     char          *pageurl;
     struct plugin *current;
 
+    // Initialise syslog.
+    openlog(NSSECURITY_TAG, LOG_PID, LOG_USER);
+
     // First sanity check the untrusted parameter pluginType.
     if (strspn(pluginType, kMimeCharacterSet) != strlen(pluginType)) {
         l_debug("rejected unusual mime type supplied by browser");
@@ -169,18 +173,39 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
 
             // Match that URL against the security policy.
             if (!policy_plugin_allowed_url(current, pageurl)) {
-                l_debug("plugin %s not allowed from %s, policy match failed",
-                        current->section,
-                        pageurl);
+
+                // Check if the administrator wants to log these decisions.
+                if (current->syslog_decisions || registry.global->syslog_decisions) {
+                    syslog(LOG_INFO, "plugin %s not allowed from %s, policy match failed",
+                                     current->section,
+                                     pageurl);
+                }
 
                 // Possibly display a message to the user.
                 netscape_display_message(instance, current->warning
                                                     ? current->warning
                                                     : registry.global->warning);
 
+                // Possibly execute administrator defined command.
+                if (current->notify_command || registry.global->notify_command) {
+                    system(current->notify_command
+                            ? current->notify_command
+                            : registry.global->notify_command);
+                }
+
+                // Possibly log the failure.
+
+
                 // Done.
                 free(pageurl);
                 continue;
+            }
+
+            // Check if the administrator wants to log these decisions.
+            if (current->syslog_decisions || registry.global->syslog_decisions) {
+                syslog(LOG_INFO, "plugin %s allowed from %s, policy match succeeded",
+                                 current->section,
+                                 pageurl);
             }
 
             // We determined this plugin is allowed to be loaded here, and it

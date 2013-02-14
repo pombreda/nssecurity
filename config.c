@@ -170,6 +170,15 @@ static int config_ini_handler(struct registry *registry,
         // This is not recommended due to some ambiguities parsing URLs it
         // introduces.
         plugin->allow_auth = strdup(value);
+    } else if (strcmp(name, "NotifyCommand") == 0) {
+        // Execute this command when a plugin does not match any AllowedDomains.
+        plugin->notify_command = strdup(value);
+    } else if (strcmp(name, "SyslogPolicyDecisions") == 0) {
+        // Log policy decisions to syslog. The intended purpose is to allow
+        // administrators to collect statistics about the domains blocked or
+        // permitted, so that old domains can be removed and commonly used safe
+        // domains can be approved.
+        plugin->syslog_decisions = strdup(value);
     } else if (strcmp(name, "LoadPlugin") == 0) {
         // The path to a plugin you want managed by this security wrapper.
 
@@ -292,6 +301,8 @@ bool netscape_plugin_list_destroy(void)
         free(current->section);
         free(current->name);
         free(current->mime_description);
+        free(current->notify_command);
+        free(current->syslog_decisions);
 
         // Close any open handles.
         platform_dlclose(current->handle);
