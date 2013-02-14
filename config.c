@@ -157,12 +157,6 @@ static int config_ini_handler(struct registry *registry,
     } else if (strcmp(name, "PluginName") == 0) {
         // The name displayed to users in their about:plugins page.
         plugin->name = strdup(value);
-    } else if (strcmp(name, "AllowPort") == 0) {
-        // If a domain contains a port specification, allow it to match.
-        //
-        // This has some security implications with AllowInsecure=1, and so is
-        // not recommended.
-        plugin->allow_port = strdup(value);
     } else if (strcmp(name, "AllowAuth") == 0) {
         // If a domain appears to contain HTTP authentication credentials,
         // allow it to match.
@@ -294,7 +288,6 @@ bool netscape_plugin_list_destroy(void)
         free(current->allow_insecure);
         free(current->allow_domains);
         free(current->allow_override);
-        free(current->allow_port);
         free(current->allow_auth);
         free(current->warning);
         free(current->plugin);
