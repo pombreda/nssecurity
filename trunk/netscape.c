@@ -111,7 +111,7 @@ NPError netscape_plugin_new(NPMIMEType pluginType,
     struct plugin *current;
 
     // Initialise syslog.
-    openlog(NSSECURITY_TAG, LOG_PID, LOG_USER);
+    openlog(NSSECURITY_TAG, LOG_PID | LOG_PERROR, LOG_USER);
 
     // First sanity check the untrusted parameter pluginType.
     if (strspn(pluginType, kMimeCharacterSet) != strlen(pluginType)) {
