@@ -19,6 +19,9 @@
 
 #include <stdint.h>
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "npapi.h"
@@ -436,6 +439,7 @@ void __destructor fini_remove_dynamic_plist(void)
     CFURLRef    mime_file      = NULL;
     CFURLRef    mime_file_lock = NULL;
     SInt32      error_code     = -1;
+    pid_t       pid            = getpgrp();
 
     // Resolve the home directory.
     home_directory = CFCopyHomeDirectoryURLForUser(NULL);
@@ -472,9 +476,26 @@ void __destructor fini_remove_dynamic_plist(void)
         goto finished;
     }
 
-    // Delete the file, and possibly stale lockfile, I don't care if it fails.
-    CFURLDestroyResource(mime_file, &error_code);
-    CFURLDestroyResource(mime_file_lock, &error_code);
+    // Wait for the session group leader to die, needed to support WebKit2 used
+    // in recent Safari versions.
+    if (fork() == 0) {
+        int             kq      = kqueue();
+        struct kevent   ke;
+        struct timespec timeout = {
+            .tv_sec = 60,
+        };
+
+        // Wait for an exit event from the session group leader.
+        EV_SET(&ke, pid, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, NULL);
+
+        // Set the event, if it fails continue.
+        kevent(kq, &ke, 1, NULL, 0, NULL);
+        kevent(kq, NULL, 0, &ke, 1, &timeout);
+
+        // Delete the file, and possibly stale lockfile, I don't care if it fails.
+        CFURLDestroyResource(mime_file, &error_code);
+        CFURLDestroyResource(mime_file_lock, &error_code);
+    }
 
 finished:
     CFRelease(home_directory);
