@@ -1,0 +1,7 @@
+#summary Netscape Security Wrapper FAQ
+#labels Phase-Deploy
+
+= Troubleshooting =
+
+  * Q: The plugin does not reflect recent changes to the configuration file.
+  * A: Try removing `~/Library/Preferences/com.google.netscapesecurity.plist`, a stale cached plist might remain.
