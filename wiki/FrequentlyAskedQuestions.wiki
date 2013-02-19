@@ -1,4 +1,4 @@
-#summary Netscape Security Wrapper FAQ
+#summary Netscape Security Wrapper FAQ and Troubleshooting.
 #labels Phase-Deploy
 
 = Troubleshooting =
