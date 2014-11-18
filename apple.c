@@ -440,6 +440,7 @@ void __destructor fini_remove_dynamic_plist(void)
     CFURLRef    mime_file_lock = NULL;
     SInt32      error_code     = -1;
     pid_t       pid            = getpgrp();
+    bool        was_forked     = false;
 
     // Resolve the home directory.
     home_directory = CFCopyHomeDirectoryURLForUser(NULL);
@@ -479,6 +480,11 @@ void __destructor fini_remove_dynamic_plist(void)
     // Wait for the session group leader to die, needed to support WebKit2 used
     // in recent Safari versions.
     if (fork() == 0) {
+        was_forked = true;
+        // Close all FDs inherited from the parent process.
+        int maxfd=sysconf(_SC_OPEN_MAX);
+        for(int fd=3; fd<maxfd; fd++)
+            close(fd);
         int             kq      = kqueue();
         struct kevent   ke;
         struct timespec timeout = {
@@ -502,7 +508,10 @@ finished:
     CFRelease(pref_directory);
     CFRelease(mime_file);
     CFRelease(mime_file_lock);
-
+    // Avoid process leak.
+    if (was_forked) {
+        exit(0);
+    }
     return;
 }
 
